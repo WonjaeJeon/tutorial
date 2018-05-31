@@ -1,12 +1,17 @@
 import java.awt.BorderLayout;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.io.File;
+import java.io.FileFilter;
 
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JTable;
+import javax.swing.JScrollPane;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 
 /*
  * JTable 파일 요약 정보 구현
@@ -16,58 +21,97 @@ import javax.swing.JTable;
  * File 클래스 이용
  */
 
-public class FileManagerEx extends JFrame implements WindowListener{
+public class FileManagerEx extends JFrame {
 	
-	JPanel mainPanel;
-	JPanel southPanel;
-	JLabel label1;
-	JTable fileTable;
-	JPopupMenu popup;
+	File f;
+	FileFilter ff;
 	
-	String korHead[]= {"이름", "크기", "수정됨"};
-	String engHead[]= {"Name", "Size", "Modified"};
+	String[] language= {"한국어", "English"};
 	
-	String fileInfo[][] = {{"fileName", "fileSize", "fileModifiedDate"},
-						{"파일이름", "파일크기", "수정날짜"}};
+	JPanel p1=new JPanel();
+	JPanel p2=new JPanel();
+	JPanel p3=new JPanel();
+	JPanel p4=new JPanel();
+	
+	JComboBox<String> langSelect=new JComboBox<String>(language);
+	
+	JLabel lb1=new JLabel("File Manager");
+	JLabel space = new JLabel("                                                                                                               ");
+	
+	JScrollPane scrPane=new JScrollPane();
+	
+	
+	JTree tree;
+
+	
+	
+	DefaultTreeModel treeModel;
+
 	
 	public FileManagerEx() {
-		super("Directory");
-	
-		mainPanel=new JPanel();
-		southPanel=new JPanel();
+		super("File Manager");
+		File cDir = new File("C://");
+		File[] cFiles;
+		FileFilter cFileFilter = new FileFilter() {
+			public boolean accept(File cFile) {
+				return cFile.isDirectory();
+			}
+		};
 		
-		popup=new JPopupMenu();
+		DefaultMutableTreeNode root = new DefaultMutableTreeNode("내컴퓨터");
 		
-		label1=new JLabel("File Explorer");
+		cFiles = cDir.listFiles(cFileFilter);
 		
-		fileTable=new JTable(fileInfo, korHead);
+		DefaultMutableTreeNode cDrive = new DefaultMutableTreeNode("C드라이브");
 		
-		add(mainPanel, BorderLayout.SOUTH);
+		treeModel = new DefaultTreeModel(root);
+		tree = new JTree(treeModel);
 		
+		if (cFiles.length == 0) {
+			System.out.println("Either dir does not exist or is not a directory");
+		} else {
+			for (int c = 0; c < cFiles.length; c++) {
+				File cFilename = cFiles[c];
+				if (cFilename.toString().contains("$") || cFilename.toString().contains("Recovery")
+						|| cFilename.toString().contains("System") || cFilename.toString().contains("Temp")
+						|| cFilename.toString().contains("PerfLogs"))
+					continue;
+
+				DefaultMutableTreeNode Folders2 = new DefaultMutableTreeNode(cFilename.getName());
+
+				treeModel.insertNodeInto(Folders2, cDrive, 0);
+				treeModel.insertNodeInto(cDrive, root, 0);
+			}
+		}
 		
-		
-		mainPanel.add(label1, BorderLayout.WEST);
-		
-		setSize(400,300);
 		setVisible(true);
-		setLocation(100,100);
 		
+		setLayout(new BorderLayout());
+		add(p1, BorderLayout.NORTH);
+		add(p2, BorderLayout.WEST);
+		add(p3, BorderLayout.SOUTH);
+		add(p4, BorderLayout.CENTER);
 		
-		addWindowListener(this);
+		scrPane.setViewportView(p2);
+		scrPane.setPreferredSize(new Dimension(150, 100));
+		add(scrPane, BorderLayout.WEST);
+		
+		p3.add(lb1, JPanel.LEFT_ALIGNMENT);
+		p3.add(space);
+		p3.add(langSelect, JPanel.RIGHT_ALIGNMENT);
+		p2.setBackground(Color.white);
+		p3.setBackground(Color.white);
+		p4.setBackground(Color.GRAY);
+		setBackground(Color.lightGray);
+		p2.add(tree);
+		setSize(600, 400);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
 	public static void main(String[] args) {
 		new FileManagerEx();
 	}
-	
-	public void windowActivated(WindowEvent e) {}
-	public void windowClosed(WindowEvent e) {}
-	public void windowClosing(WindowEvent e) {
-		System.exit(0);
-	}
-	public void windowDeactivated(WindowEvent e) {}
-	public void windowDeiconified(WindowEvent e) {}
-	public void windowIconified(WindowEvent e) {}
-	public void windowOpened(WindowEvent e) {}
 
+	
+	
 }
